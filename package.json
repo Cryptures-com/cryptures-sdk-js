@@ -1,6 +1,9 @@
 {
-  "name": "@cryptures/sdk",
+  "name": "@cryptures.com/sdk",
   "version": "0.1.0",
+  "publishConfig": {
+    "access": "public"
+  },
   "description": "Official JavaScript/TypeScript SDK for the Cryptures API: blockchain infrastructure, crypto cards, and compliance in one client.",
   "license": "MIT",
   "author": "Cryptures.com",

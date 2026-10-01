@@ -15,12 +15,12 @@ Full API reference: **https://docs.cryptures.com/**
 
 ## Installation
 
-> **Coming soon to npm.** `@cryptures/sdk` has not been published to the npm registry yet. Until it is, install it from this repository (see below).
+> **Coming soon to npm.** `@cryptures.com/sdk` has not been published to the npm registry yet. Until it is, install it from this repository (see below).
 
 Once it is published:
 
 ```bash
-npm install @cryptures/sdk
+npm install @cryptures.com/sdk
 ```
 
 To install from source in the meantime:
@@ -41,7 +41,7 @@ Requires **Node.js 18 or later**, or any runtime with a global `fetch`.
 Every request is authenticated with your project's API token, which the SDK sends as the `x-api-key` header. Cryptures provisions a project for you and shows the raw token once, when the project is created. Keep it in a secret store or an environment variable, and never commit it.
 
 ```ts
-import { Cryptures } from '@cryptures/sdk';
+import { Cryptures } from '@cryptures.com/sdk';
 
 const client = new Cryptures({ apiKey: process.env.CRYPTURES_API_KEY! });
 ```
@@ -53,7 +53,7 @@ The API key grants full access to your project. That includes moving money and r
 ## Quickstart
 
 ```ts
-import { Cryptures, CrypturesApiError } from '@cryptures/sdk';
+import { Cryptures, CrypturesApiError } from '@cryptures.com/sdk';
 
 const client = new Cryptures({ apiKey: process.env.CRYPTURES_API_KEY! });
 
@@ -164,7 +164,7 @@ import {
   CrypturesApiError,
   CrypturesConnectionError,
   CrypturesTimeoutError,
-} from '@cryptures/sdk';
+} from '@cryptures.com/sdk';
 
 try {
   await client.card.cards.fund('card_a1b2c3d4', { amount: 100 });

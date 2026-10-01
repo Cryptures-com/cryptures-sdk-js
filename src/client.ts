@@ -42,7 +42,7 @@ function isBrowser(): boolean {
  * The Cryptures API client.
  *
  * ```ts
- * import { Cryptures } from '@cryptures/sdk';
+ * import { Cryptures } from '@cryptures.com/sdk';
  *
  * const client = new Cryptures({ apiKey: process.env.CRYPTURES_API_KEY! });
  * const balance = await client.blockchain.data.getBalance('ETH', '0x...');
