@@ -1,0 +1,482 @@
+[
+  {
+    "operationId": "address.derive",
+    "method": "GET",
+    "path": "/api/v1/blockchain/wallet/{chain}/address/{xpub}/{index}",
+    "tag": "blockchain.wallet"
+  },
+  {
+    "operationId": "balance-history.get",
+    "method": "GET",
+    "path": "/api/v1/blockchain/data/balance-history/{chain}/{address}",
+    "tag": "blockchain.data"
+  },
+  {
+    "operationId": "balance.batch",
+    "method": "POST",
+    "path": "/api/v1/blockchain/data/balance/batch",
+    "tag": "blockchain.data"
+  },
+  {
+    "operationId": "balance.check",
+    "method": "GET",
+    "path": "/api/v1/blockchain/data/balance/{chain}/{address}",
+    "tag": "blockchain.data"
+  },
+  {
+    "operationId": "block.get",
+    "method": "GET",
+    "path": "/api/v1/blockchain/data/block/{chain}/{hashOrHeight}",
+    "tag": "blockchain.data"
+  },
+  {
+    "operationId": "block.latest",
+    "method": "GET",
+    "path": "/api/v1/blockchain/data/block/{chain}/latest",
+    "tag": "blockchain.data"
+  },
+  {
+    "operationId": "card.balance.get",
+    "method": "GET",
+    "path": "/api/v1/card/balance",
+    "tag": "card.balance"
+  },
+  {
+    "operationId": "card.balance.transactions",
+    "method": "GET",
+    "path": "/api/v1/card/balance/transactions",
+    "tag": "card.balance"
+  },
+  {
+    "operationId": "card.block",
+    "method": "POST",
+    "path": "/api/v1/card/cards/{card_id}/block",
+    "tag": "card.cards"
+  },
+  {
+    "operationId": "card.create",
+    "method": "POST",
+    "path": "/api/v1/card/cards/create",
+    "tag": "card.cards"
+  },
+  {
+    "operationId": "card.fund",
+    "method": "POST",
+    "path": "/api/v1/card/cards/{card_id}/fund",
+    "tag": "card.cards"
+  },
+  {
+    "operationId": "card.get",
+    "method": "GET",
+    "path": "/api/v1/card/cards/{card_id}",
+    "tag": "card.cards"
+  },
+  {
+    "operationId": "card.list",
+    "method": "GET",
+    "path": "/api/v1/card/cards",
+    "tag": "card.cards"
+  },
+  {
+    "operationId": "card.products.list",
+    "method": "GET",
+    "path": "/api/v1/card/products",
+    "tag": "card.cards"
+  },
+  {
+    "operationId": "card.reports.summary",
+    "method": "GET",
+    "path": "/api/v1/card/reports/summary",
+    "tag": "card.reports"
+  },
+  {
+    "operationId": "card.setpin",
+    "method": "POST",
+    "path": "/api/v1/card/cards/{card_id}/pin",
+    "tag": "card.cards"
+  },
+  {
+    "operationId": "card.tags.create",
+    "method": "POST",
+    "path": "/api/v1/card/tags",
+    "tag": "card.tags"
+  },
+  {
+    "operationId": "card.tags.delete",
+    "method": "DELETE",
+    "path": "/api/v1/card/tags/{tag_id}",
+    "tag": "card.tags"
+  },
+  {
+    "operationId": "card.tags.list",
+    "method": "GET",
+    "path": "/api/v1/card/tags",
+    "tag": "card.tags"
+  },
+  {
+    "operationId": "card.tags.set",
+    "method": "PUT",
+    "path": "/api/v1/card/cards/{card_id}/tags",
+    "tag": "card.cards"
+  },
+  {
+    "operationId": "card.tags.update",
+    "method": "PATCH",
+    "path": "/api/v1/card/tags/{tag_id}",
+    "tag": "card.tags"
+  },
+  {
+    "operationId": "card.terminate",
+    "method": "POST",
+    "path": "/api/v1/card/cards/{card_id}/terminate",
+    "tag": "card.cards"
+  },
+  {
+    "operationId": "card.transactions",
+    "method": "GET",
+    "path": "/api/v1/card/cards/{card_id}/transactions",
+    "tag": "card.cards"
+  },
+  {
+    "operationId": "card.unblock",
+    "method": "POST",
+    "path": "/api/v1/card/cards/{card_id}/unblock",
+    "tag": "card.cards"
+  },
+  {
+    "operationId": "card.webhooks.register",
+    "method": "POST",
+    "path": "/api/v1/card/webhooks/register",
+    "tag": "card.webhooks"
+  },
+  {
+    "operationId": "card.webhooks.status",
+    "method": "GET",
+    "path": "/api/v1/card/webhooks/status",
+    "tag": "card.webhooks"
+  },
+  {
+    "operationId": "card.withdraw",
+    "method": "POST",
+    "path": "/api/v1/card/cards/{card_id}/withdraw",
+    "tag": "card.cards"
+  },
+  {
+    "operationId": "compliance.aml.check",
+    "method": "POST",
+    "path": "/api/v1/compliance/aml/checks",
+    "tag": "compliance.screening"
+  },
+  {
+    "operationId": "compliance.monitoring.disable",
+    "method": "DELETE",
+    "path": "/api/v1/compliance/monitoring",
+    "tag": "compliance.monitoring"
+  },
+  {
+    "operationId": "compliance.monitoring.enable",
+    "method": "POST",
+    "path": "/api/v1/compliance/monitoring",
+    "tag": "compliance.monitoring"
+  },
+  {
+    "operationId": "compliance.monitoring.list",
+    "method": "GET",
+    "path": "/api/v1/compliance/monitoring",
+    "tag": "compliance.monitoring"
+  },
+  {
+    "operationId": "compliance.presets.list",
+    "method": "GET",
+    "path": "/api/v1/compliance/presets",
+    "tag": "compliance.sessions"
+  },
+  {
+    "operationId": "compliance.session.create",
+    "method": "POST",
+    "path": "/api/v1/compliance/sessions/create",
+    "tag": "compliance.sessions"
+  },
+  {
+    "operationId": "compliance.session.delete",
+    "method": "DELETE",
+    "path": "/api/v1/compliance/sessions/{session_id}",
+    "tag": "compliance.sessions"
+  },
+  {
+    "operationId": "compliance.session.documents.get",
+    "method": "GET",
+    "path": "/api/v1/compliance/sessions/{session_id}/documents/{field}",
+    "tag": "compliance.sessions"
+  },
+  {
+    "operationId": "compliance.session.get",
+    "method": "GET",
+    "path": "/api/v1/compliance/sessions/{session_id}",
+    "tag": "compliance.sessions"
+  },
+  {
+    "operationId": "compliance.session.report.create",
+    "method": "POST",
+    "path": "/api/v1/compliance/sessions/{session_id}/report",
+    "tag": "compliance.sessions"
+  },
+  {
+    "operationId": "compliance.session.report.download",
+    "method": "GET",
+    "path": "/api/v1/compliance/sessions/{session_id}/report",
+    "tag": "compliance.sessions"
+  },
+  {
+    "operationId": "compliance.session.status.update",
+    "method": "PATCH",
+    "path": "/api/v1/compliance/sessions/{session_id}/status",
+    "tag": "compliance.sessions"
+  },
+  {
+    "operationId": "compliance.sessions.list",
+    "method": "GET",
+    "path": "/api/v1/compliance/sessions",
+    "tag": "compliance.sessions"
+  },
+  {
+    "operationId": "compliance.wallet_screening.create",
+    "method": "POST",
+    "path": "/api/v1/compliance/wallet-screenings",
+    "tag": "compliance.screening"
+  },
+  {
+    "operationId": "compliance.wallet_screening.get",
+    "method": "GET",
+    "path": "/api/v1/compliance/wallet-screenings/{check_id}",
+    "tag": "compliance.screening"
+  },
+  {
+    "operationId": "compliance.webhooks.register",
+    "method": "POST",
+    "path": "/api/v1/compliance/webhooks/register",
+    "tag": "compliance.webhooks"
+  },
+  {
+    "operationId": "compliance.webhooks.status",
+    "method": "GET",
+    "path": "/api/v1/compliance/webhooks/status",
+    "tag": "compliance.webhooks"
+  },
+  {
+    "operationId": "contract.token.burn",
+    "method": "POST",
+    "path": "/api/v1/blockchain/operations/contract/token/burn",
+    "tag": "blockchain.contract"
+  },
+  {
+    "operationId": "contract.token.deploy",
+    "method": "POST",
+    "path": "/api/v1/blockchain/operations/contract/token/deploy",
+    "tag": "blockchain.contract"
+  },
+  {
+    "operationId": "contract.token.mint",
+    "method": "POST",
+    "path": "/api/v1/blockchain/operations/contract/token/mint",
+    "tag": "blockchain.contract"
+  },
+  {
+    "operationId": "exchange.rate",
+    "method": "GET",
+    "path": "/api/v1/blockchain/data/rate/{symbol}",
+    "tag": "blockchain.data"
+  },
+  {
+    "operationId": "exchange.rate.batch",
+    "method": "POST",
+    "path": "/api/v1/blockchain/data/rate/batch",
+    "tag": "blockchain.data"
+  },
+  {
+    "operationId": "exchange.rate.contract",
+    "method": "GET",
+    "path": "/api/v1/blockchain/data/rate/contract",
+    "tag": "blockchain.data"
+  },
+  {
+    "operationId": "fee.gas",
+    "method": "POST",
+    "path": "/api/v1/blockchain/data/fee/gas/{chain}",
+    "tag": "blockchain.fee"
+  },
+  {
+    "operationId": "fee.get",
+    "method": "GET",
+    "path": "/api/v1/blockchain/data/fee/{chain}",
+    "tag": "blockchain.fee"
+  },
+  {
+    "operationId": "market.assets",
+    "method": "GET",
+    "path": "/api/v1/blockchain/data/market/assets",
+    "tag": "blockchain.data"
+  },
+  {
+    "operationId": "market.coin.info",
+    "method": "GET",
+    "path": "/api/v1/blockchain/data/market/coin/{id}/info",
+    "tag": "blockchain.data"
+  },
+  {
+    "operationId": "market.coin.markets",
+    "method": "GET",
+    "path": "/api/v1/blockchain/data/market/coin/{id}/markets",
+    "tag": "blockchain.data"
+  },
+  {
+    "operationId": "market.coin.ohlcv",
+    "method": "GET",
+    "path": "/api/v1/blockchain/data/market/coin/{id}/ohlcv",
+    "tag": "blockchain.data"
+  },
+  {
+    "operationId": "market.coin.social",
+    "method": "GET",
+    "path": "/api/v1/blockchain/data/market/coin/{id}/social",
+    "tag": "blockchain.data"
+  },
+  {
+    "operationId": "market.exchanges",
+    "method": "GET",
+    "path": "/api/v1/blockchain/data/market/exchanges",
+    "tag": "blockchain.data"
+  },
+  {
+    "operationId": "market.exchanges.single",
+    "method": "GET",
+    "path": "/api/v1/blockchain/data/market/exchanges/{id}",
+    "tag": "blockchain.data"
+  },
+  {
+    "operationId": "market.global",
+    "method": "GET",
+    "path": "/api/v1/blockchain/data/market/global",
+    "tag": "blockchain.data"
+  },
+  {
+    "operationId": "market.movers",
+    "method": "GET",
+    "path": "/api/v1/blockchain/data/market/movers",
+    "tag": "blockchain.data"
+  },
+  {
+    "operationId": "market.tickers",
+    "method": "GET",
+    "path": "/api/v1/blockchain/data/market/tickers",
+    "tag": "blockchain.data"
+  },
+  {
+    "operationId": "market.tickers.single",
+    "method": "GET",
+    "path": "/api/v1/blockchain/data/market/tickers/{id}",
+    "tag": "blockchain.data"
+  },
+  {
+    "operationId": "nft.collection.get",
+    "method": "GET",
+    "path": "/api/v1/blockchain/data/nft/collection/{chain}/{collectionAddress}",
+    "tag": "blockchain.nft"
+  },
+  {
+    "operationId": "nft.owner.get",
+    "method": "GET",
+    "path": "/api/v1/blockchain/data/nft/owner/{chain}/{tokenAddress}/{tokenId}",
+    "tag": "blockchain.nft"
+  },
+  {
+    "operationId": "portfolio.get",
+    "method": "GET",
+    "path": "/api/v1/blockchain/data/portfolio/{chain}/{address}",
+    "tag": "blockchain.data"
+  },
+  {
+    "operationId": "privatekey.derive",
+    "method": "POST",
+    "path": "/api/v1/blockchain/key/{chain}/derive",
+    "tag": "blockchain.key"
+  },
+  {
+    "operationId": "rpc.gateway",
+    "method": "POST",
+    "path": "/api/v1/blockchain/operations/rpc/{chain}",
+    "tag": "blockchain.operations"
+  },
+  {
+    "operationId": "security.address-check",
+    "method": "GET",
+    "path": "/api/v1/blockchain/data/security/{address}",
+    "tag": "blockchain.data"
+  },
+  {
+    "operationId": "sentiment.fear-greed",
+    "method": "GET",
+    "path": "/api/v1/blockchain/data/sentiment/fear-greed",
+    "tag": "blockchain.data"
+  },
+  {
+    "operationId": "storage.ipfs.upload",
+    "method": "POST",
+    "path": "/api/v1/blockchain/storage/ipfs",
+    "tag": "blockchain.storage"
+  },
+  {
+    "operationId": "token.transfers",
+    "method": "GET",
+    "path": "/api/v1/blockchain/data/token-transfers/{chain}/{address}",
+    "tag": "blockchain.data"
+  },
+  {
+    "operationId": "tokens.get",
+    "method": "GET",
+    "path": "/api/v1/blockchain/data/tokens/{chain}/{tokenAddress}",
+    "tag": "blockchain.data"
+  },
+  {
+    "operationId": "tx.broadcast",
+    "method": "POST",
+    "path": "/api/v1/blockchain/operations/transaction/{chain}/broadcast",
+    "tag": "blockchain.operations"
+  },
+  {
+    "operationId": "tx.hash",
+    "method": "GET",
+    "path": "/api/v1/blockchain/data/tx/{chain}/{hash}",
+    "tag": "blockchain.data"
+  },
+  {
+    "operationId": "tx.history",
+    "method": "GET",
+    "path": "/api/v1/blockchain/data/history/{chain}/{address}",
+    "tag": "blockchain.data"
+  },
+  {
+    "operationId": "tx.send",
+    "method": "POST",
+    "path": "/api/v1/blockchain/operations/transaction/{chain}/send",
+    "tag": "blockchain.operations"
+  },
+  {
+    "operationId": "utxo.batch",
+    "method": "POST",
+    "path": "/api/v1/blockchain/data/utxo/batch",
+    "tag": "blockchain.data"
+  },
+  {
+    "operationId": "utxo.list",
+    "method": "GET",
+    "path": "/api/v1/blockchain/data/utxo/{chain}/{address}",
+    "tag": "blockchain.data"
+  },
+  {
+    "operationId": "wallet.generate",
+    "method": "GET",
+    "path": "/api/v1/blockchain/wallet/{chain}",
+    "tag": "blockchain.wallet"
+  }
+]
