@@ -1,0 +1,62 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: Typecheck, lint, test, build (Node ${{ matrix.node }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # The dev toolchain (vitest 4) needs Node 20+; the published package
+        # supports Node 18+, which the runtime-smoke job below verifies.
+        node: [20, 22, 24]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm test
+      - run: npm run build
+      - if: matrix.node == 22
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist
+          retention-days: 7
+
+  runtime-smoke:
+    name: Built package loads on Node ${{ matrix.node }}
+    needs: check
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node: [18, 20, 22, 24]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+      - name: Require (CJS) and import (ESM) the build
+        run: |
+          node -e "const { Cryptures } = require('./dist/index.cjs'); const c = new Cryptures({ apiKey: 'x' }); if (!c.blockchain || !c.card || !c.compliance) process.exit(1); console.log('cjs ok')"
+          node --input-type=module -e "import { Cryptures, CrypturesApiError } from './dist/index.js'; new Cryptures({ apiKey: 'x' }); if (typeof CrypturesApiError !== 'function') process.exit(1); console.log('esm ok')"
