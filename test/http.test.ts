@@ -180,6 +180,15 @@ describe('retries', () => {
     ['compliance.sessions.create', (c) => c.compliance.sessions.create({ preset_id: 'p', external_user_id: 'u' })],
     ['compliance.aml.check (no key)', (c) => c.compliance.aml.check({ external_user_id: 'u', full_name: 'Jane Doe' })],
     ['compliance.walletScreening.create (no key)', (c) => c.compliance.walletScreening.create({ address: '0x0', chain: 'ETH' })],
+    // Not retried since 0.1.1, matching the Go and Python SDKs.
+    ['blockchain.operations.rpc', (c) => c.blockchain.operations.rpc('ETH', { method: 'eth_sendRawTransaction', params: ['0xf86c'], id: 1 })],
+    ['blockchain.storage.uploadToIpfs', (c) => c.blockchain.storage.uploadToIpfs(new TextEncoder().encode('x'))],
+    ['blockchain.wallet.generate', (c) => c.blockchain.wallet.generate('ETH')],
+    ['card.tags.create', (c) => c.card.tags.create({ name: 'Marketing' })],
+    ['card.cards.setPin', (c) => c.card.cards.setPin('card_1', { pin: '123456' })],
+    ['card.cards.terminate', (c) => c.card.cards.terminate('card_1')],
+    ['card.cards.block', (c) => c.card.cards.block('card_1')],
+    ['card.cards.unblock', (c) => c.card.cards.unblock('card_1')],
   ];
 
   it.each(nonRetryable)('does not automatically retry %s after a 5xx', async (_name, call) => {

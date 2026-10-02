@@ -16,6 +16,9 @@ export class BlockchainWallet extends APIResource {
    * Generates a new wallet and returns its secret material in plaintext
    * (`wallet.generate`). Store it yourself -- it cannot be retrieved again.
    * The response shape depends on the chain -- see {@link GeneratedWalletFor}.
+   *
+   * **Not retried automatically** -- a retry would return a different new
+   * wallet.
    */
   generate<C extends ChainCode>(
     chain: C,
@@ -23,7 +26,7 @@ export class BlockchainWallet extends APIResource {
     options?: RequestOptions,
   ): APIPromise<GeneratedWalletFor<C>> {
     return this._client.request(
-      { method: 'GET', path: path`/api/v1/blockchain/wallet/${chain}`, query: { mnemonic: params?.mnemonic } },
+      { method: 'GET', path: path`/api/v1/blockchain/wallet/${chain}`, query: { mnemonic: params?.mnemonic }, retryable: false },
       options,
     );
   }
@@ -37,7 +40,7 @@ export class BlockchainWallet extends APIResource {
    */
   deriveAddress(chain: HdChain, xpub: string, index: number, options?: RequestOptions): APIPromise<DerivedAddress> {
     return this._client.request(
-      { method: 'GET', path: path`/api/v1/blockchain/wallet/${chain}/address/${xpub}/${index}` },
+      { method: 'GET', path: path`/api/v1/blockchain/wallet/${chain}/address/${xpub}/${index}`, retryable: true },
       options,
     );
   }
@@ -47,6 +50,6 @@ export class BlockchainWallet extends APIResource {
    * The response's `key` is a real private key, in plaintext.
    */
   derivePrivateKey(chain: HdChain, params: DerivePrivateKeyParams, options?: RequestOptions): APIPromise<DerivedPrivateKey> {
-    return this._client.request({ method: 'POST', path: path`/api/v1/blockchain/key/${chain}/derive`, body: params }, options);
+    return this._client.request({ method: 'POST', path: path`/api/v1/blockchain/key/${chain}/derive`, body: params, retryable: true }, options);
   }
 }

@@ -16,7 +16,7 @@ export class BlockchainNft extends APIResource {
     options?: RequestOptions,
   ): APIPromise<NftCollectionItem[]> {
     return this._client.request(
-      { method: 'GET', path: `${NFT}${path`/collection/${chain}/${collectionAddress}`}`, query: { ...query } },
+      { method: 'GET', path: `${NFT}${path`/collection/${chain}/${collectionAddress}`}`, query: { ...query }, retryable: true },
       options,
     );
   }
@@ -30,7 +30,7 @@ export class BlockchainNft extends APIResource {
     options?: RequestOptions,
   ): APIPromise<string[]> {
     return this._client.request(
-      { method: 'GET', path: `${NFT}${path`/owner/${chain}/${tokenAddress}/${tokenId}`}`, query: { ...query } },
+      { method: 'GET', path: `${NFT}${path`/owner/${chain}/${tokenAddress}/${tokenId}`}`, query: { ...query }, retryable: true },
       options,
     );
   }

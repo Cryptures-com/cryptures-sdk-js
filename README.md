@@ -181,16 +181,24 @@ try {
 
 Most errors use the API's standard envelope, `{ "error": { "code", "message", "requestId" } }`. A few operations return a different error body: card-issuer failures are forwarded as `{ status: "failure", message, code }`, and `getExchangeRate` reports an unpriced pair as a `403` with `{ statusCode, errorCode, message }`. The SDK reads `code` and `message` from those bodies too, falls back to the `X-Request-ID` header for `requestId`, and keeps the untouched body in `err.body`.
 
+Error fields are safe to log. `err.code`, `err.message` and `err.requestId` have control characters, such as CR and LF, replaced with spaces, and each is capped at 1024 characters. At most 1 MiB of an error response body is read into `err.body`.
+
 ## Retries
 
-Network errors, timeouts and `5xx` responses are retried up to `maxRetries` times (default `3`). The delay starts at 250 ms and doubles each attempt, with some jitter. **4xx responses are never retried.**
+Network errors, timeouts and `5xx` responses are retried up to `maxRetries` times (default `3`), but only for operations that are safe to repeat: reads and idempotent writes. The delay starts at 250 ms and doubles each attempt, with some jitter. **4xx responses are never retried.**
 
-Some operations are **not retried automatically**, because after a failure you can't tell whether they took effect:
+These operations are **not retried automatically**, because after a failure you can't tell whether they took effect, or because repeating them costs money:
 
 - `blockchain.operations.send` and `broadcast`, and `blockchain.contracts.deployToken`, `mintToken` and `burnToken`. A `500` after the API's roughly 5-second wait does **not** mean nothing was broadcast.
-- `card.cards.create`, `fund` and `withdraw`, which move money.
+- `blockchain.operations.rpc`, the JSON-RPC gateway. A call can be a broadcast, such as `eth_sendRawTransaction`, and a `5xx` after it does not mean it failed.
+- `blockchain.storage.uploadToIpfs`, which is billed per call.
+- `blockchain.wallet.generate`, where a retry would return a different new wallet.
+- `card.cards.create`, `fund` and `withdraw`, which move money, and the card state changes `setPin`, `block`, `unblock` and `terminate`.
+- `card.tags.create`.
 - `compliance.sessions.create`.
 - `compliance.aml.check` and `compliance.walletScreening.create` **without** an `idempotencyKey`. Each of those calls is a separate charge.
+
+Every other operation is retried. The JavaScript, Python and Go SDKs retry exactly the same set of operations.
 
 Before retrying one of these yourself, check its outcome first, for example with `blockchain.lookups.getTransaction`, `blockchain.data.getTransactionHistory`, `card.cards.list` or `card.balance.listTransactions`. To opt a single call into automatic retries, pass `maxRetries` explicitly:
 

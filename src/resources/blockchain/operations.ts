@@ -40,10 +40,13 @@ export class BlockchainOperations extends APIResource {
    * Forwards a JSON-RPC 2.0 request to the chain's node and returns its
    * response as-is (`rpc.gateway`). `jsonrpc` defaults to `"2.0"`. RPC-level
    * errors arrive with HTTP 200 in `response.error`.
+   *
+   * **Not retried automatically** -- the request may be a broadcast such as
+   * `eth_sendRawTransaction`, and a `5xx` after it does not mean it failed.
    */
   rpc<TResult = unknown>(chain: ChainCode, request: JsonRpcRequest, options?: RequestOptions): APIPromise<JsonRpcResponse<TResult>> {
     return this._client.request(
-      { method: 'POST', path: `${OPS}${path`/rpc/${chain}`}`, body: { jsonrpc: '2.0', ...request } },
+      { method: 'POST', path: `${OPS}${path`/rpc/${chain}`}`, body: { jsonrpc: '2.0', ...request }, retryable: false },
       options,
     );
   }

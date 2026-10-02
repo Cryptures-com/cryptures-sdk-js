@@ -55,7 +55,7 @@ export class BlockchainData extends APIResource {
    * balance coverage.
    */
   getBalance<C extends BalanceChain>(chain: C, address: string, options?: RequestOptions): APIPromise<BalanceResponseFor<C>> {
-    return this._client.request({ method: 'GET', path: `${DATA}${path`/balance/${chain}/${address}`}` }, options);
+    return this._client.request({ method: 'GET', path: `${DATA}${path`/balance/${chain}/${address}`}`, retryable: true }, options);
   }
 
   /**
@@ -64,7 +64,7 @@ export class BlockchainData extends APIResource {
    */
   getBalanceBatch(params: BalanceBatchParams, options?: RequestOptions): APIPromise<BalanceBatchResponse> {
     return this._client.request(
-      { method: 'POST', path: `${DATA}/balance/batch`, body: { ...params, addresses: csv(params.addresses) } },
+      { method: 'POST', path: `${DATA}/balance/batch`, body: { ...params, addresses: csv(params.addresses) }, retryable: true },
       options,
     );
   }
@@ -77,7 +77,7 @@ export class BlockchainData extends APIResource {
     options?: RequestOptions,
   ): APIPromise<TokenTransfersResponse> {
     return this._client.request(
-      { method: 'GET', path: `${DATA}${path`/token-transfers/${chain}/${address}`}`, query: { ...query } },
+      { method: 'GET', path: `${DATA}${path`/token-transfers/${chain}/${address}`}`, query: { ...query }, retryable: true },
       options,
     );
   }
@@ -93,7 +93,7 @@ export class BlockchainData extends APIResource {
     options?: RequestOptions,
   ): APIPromise<TxHistoryResponseFor<C>> {
     return this._client.request(
-      { method: 'GET', path: `${DATA}${path`/history/${chain}/${address}`}`, query: { ...query } },
+      { method: 'GET', path: `${DATA}${path`/history/${chain}/${address}`}`, query: { ...query }, retryable: true },
       options,
     );
   }
@@ -106,6 +106,7 @@ export class BlockchainData extends APIResource {
         method: 'GET',
         path: `${DATA}${path`/portfolio/${chain}/${address}`}`,
         query: { tokenTypes: csv(tokenTypes), ...rest },
+        retryable: true,
       },
       options,
     );
@@ -119,14 +120,14 @@ export class BlockchainData extends APIResource {
     options?: RequestOptions,
   ): APIPromise<BalanceHistoryResponse> {
     return this._client.request(
-      { method: 'GET', path: `${DATA}${path`/balance-history/${chain}/${address}`}`, query: { ...query } },
+      { method: 'GET', path: `${DATA}${path`/balance-history/${chain}/${address}`}`, query: { ...query }, retryable: true },
       options,
     );
   }
 
   /** Screens one address against a malicious-address feed (`security.address-check`). */
   checkAddressSecurity(address: string, options?: RequestOptions): APIPromise<AddressSecurityResponse> {
-    return this._client.request({ method: 'GET', path: `${DATA}${path`/security/${address}`}` }, options);
+    return this._client.request({ method: 'GET', path: `${DATA}${path`/security/${address}`}`, retryable: true }, options);
   }
 
   /**
@@ -135,37 +136,37 @@ export class BlockchainData extends APIResource {
    * scoping failure.
    */
   getExchangeRate(symbol: string, query?: ExchangeRateQuery, options?: RequestOptions): APIPromise<ExchangeRate> {
-    return this._client.request({ method: 'GET', path: `${DATA}${path`/rate/${symbol}`}`, query: { ...query } }, options);
+    return this._client.request({ method: 'GET', path: `${DATA}${path`/rate/${symbol}`}`, query: { ...query }, retryable: true }, options);
   }
 
   /** Exchange rate for a token by contract address (`exchange.rate.contract`). `basePair` defaults to EUR. */
   getExchangeRateByContract(query: ExchangeRateByContractQuery, options?: RequestOptions): APIPromise<ExchangeRateByContract> {
-    return this._client.request({ method: 'GET', path: `${DATA}/rate/contract`, query: { ...query } }, options);
+    return this._client.request({ method: 'GET', path: `${DATA}/rate/contract`, query: { ...query }, retryable: true }, options);
   }
 
   /** Exchange rates for several symbols in one call (`exchange.rate.batch`). */
   getExchangeRateBatch(entries: ExchangeRateBatchEntry[], options?: RequestOptions): APIPromise<ExchangeRateBatchResult[]> {
-    return this._client.request({ method: 'POST', path: `${DATA}/rate/batch`, body: entries }, options);
+    return this._client.request({ method: 'POST', path: `${DATA}/rate/batch`, body: entries, retryable: true }, options);
   }
 
   /** The crypto Fear & Greed Index (`sentiment.fear-greed`). */
   getFearGreedIndex(query?: FearGreedQuery, options?: RequestOptions): APIPromise<FearGreedResponse> {
-    return this._client.request({ method: 'GET', path: `${DATA}/sentiment/fear-greed`, query: { ...query } }, options);
+    return this._client.request({ method: 'GET', path: `${DATA}/sentiment/fear-greed`, query: { ...query }, retryable: true }, options);
   }
 
   /** Aggregate market statistics, wrapped in a one-element array (`market.global`). */
   getMarketGlobal(options?: RequestOptions): APIPromise<MarketGlobalStats[]> {
-    return this._client.request({ method: 'GET', path: `${DATA}/market/global` }, options);
+    return this._client.request({ method: 'GET', path: `${DATA}/market/global`, retryable: true }, options);
   }
 
   /** Every tracked coin: id, symbol, name, rank (`market.assets`). */
   listMarketAssets(options?: RequestOptions): APIPromise<MarketAssetsResponse> {
-    return this._client.request({ method: 'GET', path: `${DATA}/market/assets` }, options);
+    return this._client.request({ method: 'GET', path: `${DATA}/market/assets`, retryable: true }, options);
   }
 
   /** Paginated coins with price/market data (`market.tickers`). */
   listMarketTickers(query?: MarketTickersQuery, options?: RequestOptions): APIPromise<MarketTickersResponse> {
-    return this._client.request({ method: 'GET', path: `${DATA}/market/tickers`, query: { ...query } }, options);
+    return this._client.request({ method: 'GET', path: `${DATA}/market/tickers`, query: { ...query }, retryable: true }, options);
   }
 
   /**
@@ -173,41 +174,41 @@ export class BlockchainData extends APIResource {
    * Unknown ids yield an empty array, not a 404.
    */
   getMarketTickers(ids: string | string[], options?: RequestOptions): APIPromise<MarketTickerSummary[]> {
-    return this._client.request({ method: 'GET', path: `${DATA}${path`/market/tickers/${csv(ids)}`}` }, options);
+    return this._client.request({ method: 'GET', path: `${DATA}${path`/market/tickers/${csv(ids)}`}`, retryable: true }, options);
   }
 
   /** Top gaining and losing coins by 24-hour change (`market.movers`). */
   getMarketMovers(query?: MarketMoversQuery, options?: RequestOptions): APIPromise<MarketMoversResponse> {
-    return this._client.request({ method: 'GET', path: `${DATA}/market/movers`, query: { ...query } }, options);
+    return this._client.request({ method: 'GET', path: `${DATA}/market/movers`, query: { ...query }, retryable: true }, options);
   }
 
   /** Metadata for one coin, wrapped in a one-element array (`market.coin.info`). */
   getCoinInfo(id: string, options?: RequestOptions): APIPromise<CoinInfo[]> {
-    return this._client.request({ method: 'GET', path: `${DATA}${path`/market/coin/${id}/info`}` }, options);
+    return this._client.request({ method: 'GET', path: `${DATA}${path`/market/coin/${id}/info`}`, retryable: true }, options);
   }
 
   /** ~365 daily OHLCV candles for a coin (`market.coin.ohlcv`). */
   getCoinOhlcv(id: string, options?: RequestOptions): APIPromise<OhlcvCandle[]> {
-    return this._client.request({ method: 'GET', path: `${DATA}${path`/market/coin/${id}/ohlcv`}` }, options);
+    return this._client.request({ method: 'GET', path: `${DATA}${path`/market/coin/${id}/ohlcv`}`, retryable: true }, options);
   }
 
   /** Top exchange markets trading a coin (`market.coin.markets`). */
   getCoinMarkets(id: string, options?: RequestOptions): APIPromise<CoinMarket[]> {
-    return this._client.request({ method: 'GET', path: `${DATA}${path`/market/coin/${id}/markets`}` }, options);
+    return this._client.request({ method: 'GET', path: `${DATA}${path`/market/coin/${id}/markets`}`, retryable: true }, options);
   }
 
   /** Reddit/Twitter stats for a coin (`market.coin.social`). */
   getCoinSocial(id: string, options?: RequestOptions): APIPromise<CoinSocialStats> {
-    return this._client.request({ method: 'GET', path: `${DATA}${path`/market/coin/${id}/social`}` }, options);
+    return this._client.request({ method: 'GET', path: `${DATA}${path`/market/coin/${id}/social`}`, retryable: true }, options);
   }
 
   /** Every tracked exchange, keyed by exchange id (`market.exchanges`). */
   listExchanges(options?: RequestOptions): APIPromise<ExchangeList> {
-    return this._client.request({ method: 'GET', path: `${DATA}/market/exchanges` }, options);
+    return this._client.request({ method: 'GET', path: `${DATA}/market/exchanges`, retryable: true }, options);
   }
 
   /** One exchange's metadata and top pairs (`market.exchanges.single`). */
   getExchange(id: string, options?: RequestOptions): APIPromise<ExchangeDetail> {
-    return this._client.request({ method: 'GET', path: `${DATA}${path`/market/exchanges/${id}`}` }, options);
+    return this._client.request({ method: 'GET', path: `${DATA}${path`/market/exchanges/${id}`}`, retryable: true }, options);
   }
 }

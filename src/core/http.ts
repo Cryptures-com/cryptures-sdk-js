@@ -11,7 +11,7 @@ import { VERSION } from '../version.js';
 
 export type FetchFn = (input: string, init: RequestInit) => Promise<Response>;
 
-export interface HttpClientConfig {
+interface HttpClientConfig {
   apiKey: string;
   baseUrl: string;
   timeout: number;
@@ -21,14 +21,20 @@ export interface HttpClientConfig {
 }
 
 /** Base delay of the exponential backoff between retries. */
-export const RETRY_BASE_DELAY_MS = 250;
+const RETRY_BASE_DELAY_MS = 250;
 /** Upper bound for a single backoff delay. */
-export const RETRY_MAX_DELAY_MS = 8_000;
+const RETRY_MAX_DELAY_MS = 8_000;
+/**
+ * Most bytes of a non-2xx response body read into a `CrypturesApiError`, so a
+ * misbehaving intermediary cannot exhaust memory (same cap as the Go and
+ * Python SDKs).
+ */
+const MAX_ERROR_BODY_BYTES = 1 << 20;
 
 const RELAY_CACHE_VALUES: ReadonlySet<string> = new Set(['HIT', 'MISS', 'STALE', 'BYPASS']);
 
 /** Exponential backoff with up to 25% downward jitter: ~250ms, 500ms, 1s, 2s, ... */
-export function retryDelay(attempt: number): number {
+function retryDelay(attempt: number): number {
   const exponential = Math.min(RETRY_BASE_DELAY_MS * 2 ** attempt, RETRY_MAX_DELAY_MS);
   return Math.round(exponential * (1 - Math.random() * 0.25));
 }
@@ -59,10 +65,37 @@ function responseMeta(res: Response): ResponseMeta {
   };
 }
 
+/** Reads at most `limit` bytes of a response body as UTF-8 text. */
+async function readCappedText(res: Response, limit: number): Promise<string> {
+  if (!res.body) return (await res.text()).slice(0, limit);
+  const reader = res.body.getReader();
+  const chunks: Uint8Array[] = [];
+  let size = 0;
+  try {
+    while (size < limit) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      const chunk = value.subarray(0, limit - size);
+      chunks.push(chunk);
+      size += chunk.byteLength;
+    }
+  } finally {
+    // Stop the download of anything past the cap; ignore a failure to cancel.
+    reader.cancel().catch(() => undefined);
+  }
+  const bytes = new Uint8Array(size);
+  let offset = 0;
+  for (const chunk of chunks) {
+    bytes.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+  return new TextDecoder().decode(bytes);
+}
+
 async function readErrorBody(res: Response): Promise<unknown> {
   let text: string;
   try {
-    text = await res.text();
+    text = await readCappedText(res, MAX_ERROR_BODY_BYTES);
   } catch {
     return null;
   }
@@ -131,7 +164,8 @@ export class HttpClient {
     const headers = this.#buildHeaders(spec, options);
     const body: BodyInit | undefined =
       spec.formData !== undefined ? spec.formData : spec.body !== undefined ? JSON.stringify(spec.body) : undefined;
-    const retryable = spec.retryable ?? true;
+    // Fail-safe: an operation is retried only when its spec opts in.
+    const retryable = spec.retryable ?? false;
     const maxRetries = Math.max(0, options?.maxRetries ?? (retryable ? this.#config.maxRetries : 0));
     const timeout = options?.timeout ?? this.#config.timeout;
     const userSignal = options?.signal;
