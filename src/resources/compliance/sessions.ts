@@ -32,7 +32,7 @@ export class ComplianceSessions extends APIResource {
 
   /** A session's status and normalized result (`compliance.session.get`). */
   get(sessionId: string, options?: RequestOptions): APIPromise<Session> {
-    return this._client.request({ method: 'GET', path: `${SESSIONS}${path`/${sessionId}`}` }, options);
+    return this._client.request({ method: 'GET', path: `${SESSIONS}${path`/${sessionId}`}`, retryable: true }, options);
   }
 
   /**
@@ -42,7 +42,7 @@ export class ComplianceSessions extends APIResource {
    */
   list(query?: ListSessionsQuery, options?: RequestOptions): APIPromise<CursorPage<SessionSummary>> {
     return this._client
-      .request<RawSessionList>({ method: 'GET', path: SESSIONS, query: { ...query } }, options)
+      .request<RawSessionList>({ method: 'GET', path: SESSIONS, query: { ...query }, retryable: true }, options)
       ._map((raw) => ({ data: raw.sessions, nextCursor: raw.next_cursor ?? null }));
   }
 
@@ -61,7 +61,7 @@ export class ComplianceSessions extends APIResource {
   /** Records a manual `Approved`/`Declined` decision (`compliance.session.status.update`). */
   updateStatus(sessionId: string, params: UpdateSessionStatusParams, options?: RequestOptions): APIPromise<UpdatedSessionStatus> {
     return this._client.request(
-      { method: 'PATCH', path: `${SESSIONS}${path`/${sessionId}/status`}`, body: params },
+      { method: 'PATCH', path: `${SESSIONS}${path`/${sessionId}/status`}`, body: params, retryable: true },
       options,
     );
   }
@@ -78,6 +78,7 @@ export class ComplianceSessions extends APIResource {
         method: 'DELETE',
         path: `${SESSIONS}${path`/${sessionId}`}`,
         query: { privacy_erasure: erasure === undefined ? undefined : String(erasure) },
+        retryable: true,
       },
       options,
     );
@@ -100,6 +101,7 @@ export class ComplianceSessions extends APIResource {
         path: `${SESSIONS}${path`/${sessionId}/documents/${field}`}`,
         query: { ...query },
         responseType: 'binary',
+        retryable: true,
       },
       options,
     );
@@ -107,13 +109,13 @@ export class ComplianceSessions extends APIResource {
 
   /** Generates the session's PDF report, kept for 7 days (`compliance.session.report.create`). */
   createReport(sessionId: string, options?: RequestOptions): APIPromise<SessionReport> {
-    return this._client.request({ method: 'POST', path: `${SESSIONS}${path`/${sessionId}/report`}` }, options);
+    return this._client.request({ method: 'POST', path: `${SESSIONS}${path`/${sessionId}/report`}`, retryable: true }, options);
   }
 
   /** Downloads the most recent PDF report (`compliance.session.report.download`). */
   downloadReport(sessionId: string, options?: RequestOptions): APIPromise<BinaryResponse> {
     return this._client.request(
-      { method: 'GET', path: `${SESSIONS}${path`/${sessionId}/report`}`, responseType: 'binary' },
+      { method: 'GET', path: `${SESSIONS}${path`/${sessionId}/report`}`, responseType: 'binary', retryable: true },
       options,
     );
   }

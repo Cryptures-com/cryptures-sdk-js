@@ -39,22 +39,25 @@ export class CardCards extends APIResource {
 
   /** Fetches a card by id, including PAN and CVV for API-key callers (`card.get`). */
   get(cardId: string, query?: GetCardQuery, options?: RequestOptions): APIPromise<CardEnvelope<Card>> {
-    return this._client.request({ method: 'GET', path: `${CARDS}${path`/${cardId}`}`, query: { ...query } }, options);
+    return this._client.request({ method: 'GET', path: `${CARDS}${path`/${cardId}`}`, query: { ...query }, retryable: true }, options);
   }
 
   /** Lists every card of the calling project, newest first (`card.list`). */
   list(options?: RequestOptions): APIPromise<CardListResponse> {
-    return this._client.request({ method: 'GET', path: CARDS }, options);
+    return this._client.request({ method: 'GET', path: CARDS, retryable: true }, options);
   }
 
   /** The active card product catalog -- the codes `create` accepts (`card.products.list`). */
   listProducts(options?: RequestOptions): APIPromise<CardProductsResponse> {
-    return this._client.request({ method: 'GET', path: '/api/v1/card/products' }, options);
+    return this._client.request({ method: 'GET', path: '/api/v1/card/products', retryable: true }, options);
   }
 
-  /** Sets a 6-digit PIN. us_493_visa_atm cards only (`card.setpin`). */
+  /**
+   * Sets a 6-digit PIN. us_493_visa_atm cards only (`card.setpin`).
+   * **Not retried automatically.**
+   */
   setPin(cardId: string, params: SetCardPinParams, options?: RequestOptions): APIPromise<CardSimpleResult> {
-    return this._client.request({ method: 'POST', path: `${CARDS}${path`/${cardId}/pin`}`, body: params }, options);
+    return this._client.request({ method: 'POST', path: `${CARDS}${path`/${cardId}/pin`}`, body: params, retryable: false }, options);
   }
 
   /**
@@ -79,25 +82,25 @@ export class CardCards extends APIResource {
     );
   }
 
-  /** Permanently terminates a card (`card.terminate`). */
+  /** Permanently terminates a card (`card.terminate`). **Not retried automatically.** */
   terminate(cardId: string, options?: RequestOptions): APIPromise<CardStatusResult<'terminated'>> {
-    return this._client.request({ method: 'POST', path: `${CARDS}${path`/${cardId}/terminate`}` }, options);
+    return this._client.request({ method: 'POST', path: `${CARDS}${path`/${cardId}/terminate`}`, retryable: false }, options);
   }
 
-  /** Freezes a card (`card.block`). */
+  /** Freezes a card (`card.block`). **Not retried automatically.** */
   block(cardId: string, options?: RequestOptions): APIPromise<CardStatusResult<'blocked'>> {
-    return this._client.request({ method: 'POST', path: `${CARDS}${path`/${cardId}/block`}` }, options);
+    return this._client.request({ method: 'POST', path: `${CARDS}${path`/${cardId}/block`}`, retryable: false }, options);
   }
 
-  /** Unfreezes a previously blocked card (`card.unblock`). */
+  /** Unfreezes a previously blocked card (`card.unblock`). **Not retried automatically.** */
   unblock(cardId: string, options?: RequestOptions): APIPromise<CardStatusResult<'active'>> {
-    return this._client.request({ method: 'POST', path: `${CARDS}${path`/${cardId}/unblock`}` }, options);
+    return this._client.request({ method: 'POST', path: `${CARDS}${path`/${cardId}/unblock`}`, retryable: false }, options);
   }
 
   /** A card's transaction history (`card.transactions`). */
   listTransactions(cardId: string, query?: CardTransactionsQuery, options?: RequestOptions): APIPromise<CardTransactionsResponse> {
     return this._client.request(
-      { method: 'GET', path: `${CARDS}${path`/${cardId}/transactions`}`, query: { ...query } },
+      { method: 'GET', path: `${CARDS}${path`/${cardId}/transactions`}`, query: { ...query }, retryable: true },
       options,
     );
   }

@@ -30,7 +30,7 @@ function splitIdempotency(options: IdempotentRequestOptions | undefined): {
 export class CompliancePresets extends APIResource {
   /** The standard active presets every project can use (`compliance.presets.list`). */
   list(options?: RequestOptions): APIPromise<PresetListResponse> {
-    return this._client.request({ method: 'GET', path: `${COMPLIANCE}/presets` }, options);
+    return this._client.request({ method: 'GET', path: `${COMPLIANCE}/presets`, retryable: true }, options);
   }
 }
 
@@ -83,7 +83,7 @@ export class ComplianceWalletScreening extends APIResource {
 
   /** A stored wallet screening, free to read (`compliance.wallet_screening.get`). */
   get(checkId: string, options?: RequestOptions): APIPromise<WalletScreening> {
-    return this._client.request({ method: 'GET', path: `${COMPLIANCE}${path`/wallet-screenings/${checkId}`}` }, options);
+    return this._client.request({ method: 'GET', path: `${COMPLIANCE}${path`/wallet-screenings/${checkId}`}`, retryable: true }, options);
   }
 }
 
@@ -96,7 +96,7 @@ export class ComplianceMonitoring extends APIResource {
    * `.withResponse()` to tell them apart.
    */
   enable(params: MonitoringEntity, options?: RequestOptions): APIPromise<MonitoringSubscription> {
-    return this._client.request({ method: 'POST', path: `${COMPLIANCE}/monitoring`, body: params }, options);
+    return this._client.request({ method: 'POST', path: `${COMPLIANCE}/monitoring`, body: params, retryable: true }, options);
   }
 
   /** Stops monitoring; the paid year is not refunded (`compliance.monitoring.disable`). Resolves on `204`. */
@@ -106,6 +106,7 @@ export class ComplianceMonitoring extends APIResource {
         method: 'DELETE',
         path: `${COMPLIANCE}/monitoring`,
         query: { entity_kind: params.entity_kind, external_user_id: params.external_user_id },
+        retryable: true,
       },
       options,
     );
@@ -114,7 +115,7 @@ export class ComplianceMonitoring extends APIResource {
   /** One page of monitoring subscriptions, newest first (`compliance.monitoring.list`). */
   list(query?: ListMonitoringQuery, options?: RequestOptions): APIPromise<CursorPage<MonitoringSubscription>> {
     return this._client
-      .request<RawMonitoringList>({ method: 'GET', path: `${COMPLIANCE}/monitoring`, query: { ...query } }, options)
+      .request<RawMonitoringList>({ method: 'GET', path: `${COMPLIANCE}/monitoring`, query: { ...query }, retryable: true }, options)
       ._map((raw) => ({ data: raw.subscriptions, nextCursor: raw.next_cursor ?? null }));
   }
 
@@ -132,11 +133,11 @@ export class ComplianceWebhooks extends APIResource {
    * (`compliance.webhooks.register`). The returned `secret` is shown only once.
    */
   register(params: RegisterWebhookParams, options?: RequestOptions): APIPromise<WebhookRegistration> {
-    return this._client.request({ method: 'POST', path: `${COMPLIANCE}/webhooks/register`, body: params }, options);
+    return this._client.request({ method: 'POST', path: `${COMPLIANCE}/webhooks/register`, body: params, retryable: true }, options);
   }
 
   /** Reads back the registered compliance webhook, without the secret (`compliance.webhooks.status`). */
   getStatus(options?: RequestOptions): APIPromise<WebhookStatus> {
-    return this._client.request({ method: 'GET', path: `${COMPLIANCE}/webhooks/status` }, options);
+    return this._client.request({ method: 'GET', path: `${COMPLIANCE}/webhooks/status`, retryable: true }, options);
   }
 }

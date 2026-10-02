@@ -41,7 +41,9 @@ export interface BalanceUtxo {
   incoming: string;
   /** Outgoing sum, including confirmed and pending mempool transactions. */
   outgoing: string;
+  /** Incoming sum of pending (unconfirmed, mempool) transactions only, in satoshis. */
   incomingPending: string;
+  /** Outgoing sum of pending (unconfirmed, mempool) transactions only, in satoshis. */
   outgoingPending: string;
 }
 

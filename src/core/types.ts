@@ -88,9 +88,11 @@ export interface RequestSpec {
   responseType?: 'json' | 'binary';
   /**
    * Whether network errors and 5xx responses may be retried automatically.
-   * Defaults to `true`; set `false` for operations whose outcome is
-   * ambiguous after a failure (broadcasts, money movement, billable checks
-   * without an idempotency key).
+   * Defaults to `false` (fail-safe): set `true` only for operations that are
+   * safe to repeat (reads and idempotent writes). Operations whose outcome is
+   * ambiguous after a failure (broadcasts, money movement, billed calls,
+   * card state changes) leave it `false`. The per-operation choice matches
+   * the Go and Python SDKs exactly.
    */
   retryable?: boolean;
   idempotencyKey?: string;

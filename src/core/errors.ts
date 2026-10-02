@@ -66,6 +66,28 @@ export class CrypturesTimeoutError extends CrypturesConnectionError {}
 /** Thrown when the caller aborted the request through its own `AbortSignal`. */
 export class CrypturesAbortError extends CrypturesError {}
 
+/** Longest `code`/`message`/`requestId` taken from a response body; the full body stays in `body`. */
+const MAX_ERROR_FIELD_CHARS = 1024;
+const TRUNCATED_SUFFIX = '... [truncated]';
+// C0/C1 control characters (CR, LF, ...) plus the Unicode line and paragraph separators.
+// eslint-disable-next-line no-control-regex
+const CONTROL_CHARS = /[\u0000-\u001f\u007f-\u009f\u2028\u2029]/g;
+
+/**
+ * Makes a server-supplied string safe to embed in an error message that will
+ * likely be logged: control characters become spaces, so a malicious or
+ * buggy upstream cannot forge extra log lines, and the result is capped at
+ * 1024 characters.
+ */
+export function sanitizeErrorField(value: string): string {
+  let capped = value;
+  if (value.length > MAX_ERROR_FIELD_CHARS) {
+    const chars = Array.from(value);
+    if (chars.length > MAX_ERROR_FIELD_CHARS) capped = chars.slice(0, MAX_ERROR_FIELD_CHARS).join('') + TRUNCATED_SUFFIX;
+  }
+  return capped.replace(CONTROL_CHARS, ' ');
+}
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
@@ -99,11 +121,14 @@ export function apiErrorFromResponse(status: number, statusText: string, headers
     message = body.trim().slice(0, 500);
   }
 
+  const headerRequestId = headers.get('x-request-id');
   return new CrypturesApiError({
     status,
-    code: code ?? `http_${status}`,
-    message: message ?? (statusText ? `${status} ${statusText}` : `Request failed with status ${status}`),
-    requestId: requestId ?? headers.get('x-request-id'),
+    code: sanitizeErrorField(code ?? `http_${status}`),
+    message: sanitizeErrorField(
+      message ?? (statusText ? `${status} ${statusText}` : `Request failed with status ${status}`),
+    ),
+    requestId: requestId !== undefined ? sanitizeErrorField(requestId) : headerRequestId && sanitizeErrorField(headerRequestId),
     body,
     headers,
   });
