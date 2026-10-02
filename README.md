@@ -15,23 +15,8 @@ Full API reference: **https://docs.cryptures.com/**
 
 ## Installation
 
-> **Coming soon to npm.** `@cryptures.com/sdk` has not been published to the npm registry yet. Until it is, install it from this repository (see below).
-
-Once it is published:
-
 ```bash
 npm install @cryptures.com/sdk
-```
-
-To install from source in the meantime:
-
-```bash
-git clone https://github.com/Cryptures-com/cryptures-sdk-js.git
-cd cryptures-sdk-js
-npm install
-npm run build
-# then, from your project:
-npm install /path/to/cryptures-sdk-js
 ```
 
 Requires **Node.js 18 or later**, or any runtime with a global `fetch`.
