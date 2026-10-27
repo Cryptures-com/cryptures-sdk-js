@@ -1,9 +1,12 @@
+import { expect } from 'vitest';
 import type { EndpointCase } from '../helpers.js';
 
 const CARDS = '/api/v1/card/cards';
 const CARD_ID = 'card_a1b2c3d4';
 const TAG_ID = 'tag_9f1a2b3c-4d5e-6f70-8192-a3b4c5d6e7f8';
 const TAG = { tag_id: TAG_ID, name: 'Marketing', color: '#4F46E5' };
+
+const KYC_STATE = { supported: true, fee_usd: 1, submitted: false, submitted_at: null };
 
 const FULL_CARD = {
   card_id: CARD_ID,
@@ -24,6 +27,7 @@ const FULL_CARD = {
   expiredate: '08/31',
   created_at: '2026-08-29T00:00:00Z',
   tags: [TAG],
+  kyc: KYC_STATE,
 };
 
 export const cardCardsCases: EndpointCase[] = [
@@ -45,7 +49,7 @@ export const cardCardsCases: EndpointCase[] = [
       body: { product_code: 'us_493_visa_bin', first_name: 'Jane', last_name: 'Doe', email: 'jane@example.com', initial_load: 20, tags: ['Marketing'] },
     },
     response: {
-      body: { status: 'success', message: 'Card created successfully.', data: { card_id: CARD_ID, status: 'active', last_four: '4242', tags: [TAG] } },
+      body: { status: 'success', message: 'Card created successfully.', data: { card_id: CARD_ID, status: 'active', last_four: '4242', tags: [TAG], kyc: KYC_STATE } },
     },
   },
   {
@@ -82,6 +86,7 @@ export const cardCardsCases: EndpointCase[] = [
             label: null,
             created_at: '2026-08-28T00:00:00Z',
             tags: [TAG],
+            kyc: { supported: true, fee_usd: 1, submitted: true, submitted_at: '2026-08-29T10:15:00Z' },
           },
         ],
       },
@@ -105,6 +110,8 @@ export const cardCardsCases: EndpointCase[] = [
             fund_fee_pct: 0,
             annual_fee_usd: 9,
             disallow_initial_load: true,
+            kyc_supported: true,
+            kyc_fee_usd: 1,
           },
         ],
       },
@@ -116,6 +123,65 @@ export const cardCardsCases: EndpointCase[] = [
     call: (c) => c.card.cards.setPin('card_atm_1a2b3c', { pin: '654321' }),
     request: { method: 'POST', path: `${CARDS}/card_atm_1a2b3c/pin`, body: { pin: '654321' } },
     response: { body: { status: 'success', message: 'Card PIN set successfully.' } },
+  },
+  {
+    operationId: 'card.kyc.submit',
+    sdkMethod: 'card.cards.submitKyc',
+    call: (c) =>
+      c.card.cards.submitKyc(CARD_ID, {
+        documentFront: { file: new Uint8Array([1, 2, 3]), filename: 'front.png', contentType: 'image/png' },
+        documentBack: new Blob(['back-bytes'], { type: 'application/pdf' }),
+      }),
+    request: {
+      method: 'POST',
+      path: `${CARDS}/${CARD_ID}/kyc`,
+      assert: async (req) => {
+        // fetch sets the multipart boundary itself; the SDK must not force JSON.
+        expect(req.headers.get('content-type')).toBeNull();
+        expect(req.rawBody).toBeInstanceOf(FormData);
+        const form = req.rawBody as FormData;
+        expect([...form.keys()]).toEqual(['documentFront', 'documentBack']);
+        const front = form.get('documentFront') as File;
+        expect(front.name).toBe('front.png');
+        expect(front.type).toBe('image/png');
+        expect([...new Uint8Array(await front.arrayBuffer())]).toEqual([1, 2, 3]);
+        const back = form.get('documentBack') as File;
+        expect(back.name).toBe('documentBack');
+        expect(back.type).toBe('application/pdf');
+        expect(await back.text()).toBe('back-bytes');
+      },
+    },
+    response: {
+      status: 201,
+      body: {
+        status: 'success',
+        message: 'KYC documents submitted.',
+        data: { card_id: CARD_ID, document_front_uploaded: true, document_back_uploaded: true, fee_charged_usd: 1, fee_already_paid: false },
+      },
+    },
+  },
+  {
+    operationId: 'card.kyc.submit',
+    sdkMethod: 'card.cards.submitKyc',
+    label: 'front only, File input',
+    call: (c) => c.card.cards.submitKyc(CARD_ID, { documentFront: new File(['front'], 'id.jpg', { type: 'image/jpeg' }) }),
+    request: {
+      method: 'POST',
+      path: `${CARDS}/${CARD_ID}/kyc`,
+      assert: async (req) => {
+        const form = req.rawBody as FormData;
+        expect([...form.keys()]).toEqual(['documentFront']);
+        expect((form.get('documentFront') as File).name).toBe('id.jpg');
+      },
+    },
+    response: {
+      status: 201,
+      body: {
+        status: 'success',
+        message: 'KYC documents submitted.',
+        data: { card_id: CARD_ID, document_front_uploaded: true, document_back_uploaded: false, fee_charged_usd: 0, fee_already_paid: true },
+      },
+    },
   },
   {
     operationId: 'card.fund',

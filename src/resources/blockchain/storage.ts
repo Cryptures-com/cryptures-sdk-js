@@ -1,16 +1,8 @@
 import type { APIPromise } from '../../core/api-promise.js';
 import { APIResource } from '../../core/resource.js';
 import type { RequestOptions } from '../../core/types.js';
+import { toBlob } from '../../core/upload.js';
 import type { IpfsUploadOptions, IpfsUploadResponse, UploadableFile } from '../../types/blockchain.js';
-
-function toBlob(file: UploadableFile, contentType: string | undefined): Blob {
-  if (file instanceof Blob) return file;
-  const bytes =
-    file instanceof ArrayBuffer
-      ? new Uint8Array(file)
-      : new Uint8Array(file.buffer as ArrayBuffer, file.byteOffset, file.byteLength);
-  return new Blob([bytes], contentType ? { type: contentType } : {});
-}
 
 /** IPFS storage. `client.blockchain.storage`. */
 export class BlockchainStorage extends APIResource {

@@ -23,6 +23,8 @@ export class CardWebhooks extends APIResource {
   /**
    * Registers (or replaces) the project's card-event callback URL
    * (`card.webhooks.register`). The returned `secret` is shown only once.
+   * Event names are listed by the `CardWebhookEvent` type (today
+   * `card.kyc_submitted`, sent after `client.card.cards.submitKyc`).
    */
   register(params: RegisterWebhookParams, options?: RequestOptions): APIPromise<WebhookRegistration> {
     return this._client.request({ method: 'POST', path: '/api/v1/card/webhooks/register', body: params, retryable: true }, options);

@@ -23,6 +23,7 @@ const RETRY_MATRIX: Record<string, boolean> = {
   'card.create': false,
   'card.fund': false,
   'card.withdraw': false,
+  'card.kyc.submit': false, // charged, outcome unknown after a 502/504
   'card.setpin': false,
   'card.block': false,
   'card.unblock': false,

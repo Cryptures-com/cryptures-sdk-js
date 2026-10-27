@@ -1,11 +1,13 @@
 import type { APIPromise } from '../../core/api-promise.js';
 import { APIResource, path } from '../../core/resource.js';
 import type { RequestOptions } from '../../core/types.js';
+import { toBlob } from '../../core/upload.js';
 import type {
   Card,
   CardAmountParams,
   CardAmountResult,
   CardEnvelope,
+  CardKycSubmitResponse,
   CardListResponse,
   CardProductsResponse,
   CardSimpleResult,
@@ -14,10 +16,21 @@ import type {
   CardTransactionsResponse,
   CreateCardParams,
   GetCardQuery,
+  KycDocument,
   SetCardPinParams,
+  SubmitCardKycParams,
 } from '../../types/card.js';
 
 const CARDS = '/api/v1/card/cards';
+
+function appendDocument(form: FormData, field: string, document: KycDocument): void {
+  const named =
+    document instanceof Blob || document instanceof ArrayBuffer || ArrayBuffer.isView(document) ? undefined : document;
+  const file = named ? named.file : document;
+  const fileName = typeof File !== 'undefined' && file instanceof File ? file.name : undefined;
+  // Every part needs a file name to be a file part; fetch sets the multipart boundary header itself.
+  form.append(field, toBlob(file as Blob, named?.contentType), named?.filename ?? fileName ?? field);
+}
 
 /**
  * Virtual card lifecycle: issue, fund, withdraw, freeze and terminate.
@@ -95,6 +108,44 @@ export class CardCards extends APIResource {
   /** Unfreezes a previously blocked card (`card.unblock`). **Not retried automatically.** */
   unblock(cardId: string, options?: RequestOptions): APIPromise<CardStatusResult<'active'>> {
     return this._client.request({ method: 'POST', path: `${CARDS}${path`/${cardId}/unblock`}`, retryable: false }, options);
+  }
+
+  /**
+   * Submits the cardholder's identity documents for a card
+   * (`card.kyc.submit`). Sent as `multipart/form-data` with `documentFront`
+   * (required) and `documentBack` (optional). Each file is a PNG, JPG/JPEG or
+   * PDF of at most 2 MB; the API checks the type from the content. Nothing is
+   * validated client-side -- the API's errors surface as-is.
+   *
+   * Only cards whose product supports KYC accept documents: check
+   * `kyc.supported` from `get`/`list` or `kyc_supported` from `listProducts`.
+   * A one-time per-card fee (`kyc_fee_usd`, default 1 USD) is charged from the
+   * project balance before submission; when the fee is 0 the upload is free
+   * (`fee_charged_usd: 0`). Resubmitting is not charged again
+   * (`fee_already_paid: true`). A `card.kyc_submitted` webhook event fires on
+   * success.
+   *
+   * **Not retried automatically** -- it is charged and not idempotent. After a
+   * 502 `upstream_error`, a 504 `upstream_timeout` or a network error the
+   * outcome is unknown and the fee is held for review: check `get`
+   * (`kyc.submitted`) and `balance.listTransactions` before submitting again.
+   *
+   * Errors (`CrypturesApiError.code`):
+   * - 400 `invalid_request`, `missing_document_front`, `too_many_files`,
+   *   `invalid_file_type`, and `kyc_rejected` (the issuer refused the
+   *   documents; the fee is refunded automatically)
+   * - 402 `insufficient_balance` (nothing is charged)
+   * - 404 `card_not_found`
+   * - 409 `kyc_not_supported`, `kyc_email_unknown`, `kyc_in_progress`
+   * - 413 `file_too_large` (over 2 MB), `payload_too_large`
+   * - 429 `rate_limited` (more than 5 submissions per card per day, or the per-minute limit)
+   * - 502 `upstream_error`, 504 `upstream_timeout`
+   */
+  submitKyc(cardId: string, params: SubmitCardKycParams, options?: RequestOptions): APIPromise<CardKycSubmitResponse> {
+    const form = new FormData();
+    appendDocument(form, 'documentFront', params.documentFront);
+    if (params.documentBack !== undefined) appendDocument(form, 'documentBack', params.documentBack);
+    return this._client.request({ method: 'POST', path: `${CARDS}${path`/${cardId}/kyc`}`, formData: form, retryable: false }, options);
   }
 
   /** A card's transaction history (`card.transactions`). */

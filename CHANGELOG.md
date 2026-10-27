@@ -1,5 +1,23 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- `card.cards.submitKyc(cardId, { documentFront, documentBack? })` uploads a cardholder's identity documents (`POST /api/v1/card/cards/{card_id}/kyc`, `multipart/form-data`). Files can be a `Blob`, a `File`, raw bytes, or `{ file, filename?, contentType? }`. It is **not retried automatically**, because it is charged and its outcome is unknown after a `502` or `504`. A fee of 0 means a free upload. The error codes are documented in the method's JSDoc.
+- Types `SubmitCardKycParams`, `KycDocument`, `CardKycSubmitResponse`, `CardKycSubmitData`, `CardKycState`, `CardWebhookEvent`, `KnownCardWebhookEvent` and `CardKycSubmittedEventData`.
+- `CardProduct.kyc_supported` and `kyc_fee_usd`.
+- `kyc` (`{ supported, fee_usd, submitted, submitted_at }`) on `Card` (`create` and `get`) and `CardListItem` (`list`).
+- The `card.kyc_submitted` webhook event.
+
+### Removed
+
+- The `giftcard_purchase_debit` and `giftcard_purchase_reversal` ledger entry types, which the API no longer returns. `LedgerEntryType` still accepts any string.
+
+### Internal
+
+- The raw-bytes-to-`Blob` helper used by uploads moved to `core/upload.ts`.
+
 ## 0.1.1 (2026-10-02)
 
 ### Changed
