@@ -72,6 +72,12 @@
     "tag": "card.cards"
   },
   {
+    "operationId": "card.kyc.submit",
+    "method": "POST",
+    "path": "/api/v1/card/cards/{card_id}/kyc",
+    "tag": "card.cards"
+  },
+  {
     "operationId": "card.list",
     "method": "GET",
     "path": "/api/v1/card/cards",

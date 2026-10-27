@@ -25,9 +25,9 @@ function publicSdkMethods(): string[] {
 }
 
 describe('API surface coverage', () => {
-  it('the manifest lists every operation from the API reference (80)', () => {
-    expect(MANIFEST).toHaveLength(80);
-    expect(new Set(MANIFEST.map((e) => e.operationId)).size).toBe(80);
+  it('the manifest lists every operation from the API reference (81)', () => {
+    expect(MANIFEST).toHaveLength(81);
+    expect(new Set(MANIFEST.map((e) => e.operationId)).size).toBe(81);
   });
 
   it('every API operation has at least one endpoint test case', () => {
@@ -63,6 +63,6 @@ describe('API surface coverage', () => {
     expect(ambiguous).toEqual([]);
     // ...and there are exactly as many endpoint methods as operations.
     const endpointMethods = publicSdkMethods().filter((m) => !ITERATOR_METHODS.includes(m));
-    expect(endpointMethods).toHaveLength(80);
+    expect(endpointMethods).toHaveLength(81);
   });
 });

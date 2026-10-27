@@ -2,6 +2,8 @@
 // transcribed from the Cryptures API reference (https://docs.cryptures.com/).
 // Fields the reference does not mark as required are optional.
 
+import type { UploadableFile } from './blockchain.js';
+
 /**
  * Card product codes documented today. The catalog is managed by Cryptures
  * and can change -- fetch it with `client.card.cards.listProducts()` rather
@@ -51,6 +53,18 @@ export interface CardBalanceAmount {
   currency: string;
 }
 
+/** A card's identity-document (KYC) state, as returned by `create`, `get` and `list`. */
+export interface CardKycState {
+  /** Whether this card's product accepts KYC documents. When false, `submitKyc` answers 409 `kyc_not_supported`. */
+  supported: boolean;
+  /** The one-time KYC fee in USD for this card's product, or null. 0 means the upload is free. */
+  fee_usd: number | null;
+  /** Whether documents have been submitted successfully for this card. */
+  submitted: boolean;
+  /** When the documents were first submitted successfully (ISO 8601), or null if they have not been. */
+  submitted_at: string | null;
+}
+
 /** The card object returned by `create` and `get`. */
 export interface Card {
   /** Used as the `cardId` argument on every other card method. */
@@ -83,6 +97,51 @@ export interface Card {
   created_at?: string;
   /** On `get`, always present (possibly empty). On `create`, only when `tags` was sent. */
   tags?: CardTagRef[];
+  /** Identity-document (KYC) state. See `client.card.cards.submitKyc`. */
+  kyc?: CardKycState;
+}
+
+/**
+ * A KYC document: a `Blob`/`File`, raw bytes, or `{ file, filename?, contentType? }`
+ * to name raw bytes. PNG, JPG/JPEG or PDF, at most 2 MB; the API checks the
+ * type from the file's content.
+ */
+export type KycDocument = UploadableFile | { file: UploadableFile; filename?: string; contentType?: string };
+
+export interface SubmitCardKycParams {
+  /** Front of the identity document (required). */
+  documentFront: KycDocument;
+  /** Back of the identity document, e.g. the reverse of an ID card (optional). */
+  documentBack?: KycDocument;
+}
+
+export interface CardKycSubmitData {
+  card_id: string;
+  /** Always true on success. */
+  document_front_uploaded: boolean;
+  /** Whether a back document was submitted. */
+  document_back_uploaded: boolean;
+  /** USD charged by this call. 0 when the fee was already paid for this card or the product's KYC fee is 0. */
+  fee_charged_usd: number;
+  /** True when an earlier submission already paid this card's KYC fee. */
+  fee_already_paid: boolean;
+}
+
+/** Response of `submitKyc`. */
+export interface CardKycSubmitResponse {
+  status: 'success';
+  message: string;
+  data: CardKycSubmitData;
+}
+
+/** Webhook event names the card domain sends. The list can grow -- treat unknown values as "other". */
+export type KnownCardWebhookEvent = 'card.kyc_submitted';
+export type CardWebhookEvent = KnownCardWebhookEvent | (string & {});
+
+/** The `data` of a `card.kyc_submitted` webhook event. */
+export interface CardKycSubmittedEventData {
+  card_id: string;
+  document_back_uploaded: boolean;
 }
 
 export interface GetCardQuery {
@@ -175,6 +234,8 @@ export interface CardListItem {
   label?: string | null;
   created_at: string;
   tags: CardTagRef[];
+  /** Identity-document (KYC) state. See `client.card.cards.submitKyc`. */
+  kyc: CardKycState;
 }
 
 export interface CardListResponse {
@@ -196,6 +257,10 @@ export interface CardProduct {
   annual_fee_usd: number | null;
   /** When true, `create` must be called without `initial_load`. */
   disallow_initial_load: boolean;
+  /** Whether cards of this product accept identity documents via `client.card.cards.submitKyc`. */
+  kyc_supported: boolean;
+  /** One-time USD fee per card for the first KYC submission. Set per product; 0 means the upload is free. */
+  kyc_fee_usd: number;
 }
 
 export interface CardProductsResponse {
@@ -224,8 +289,6 @@ export type KnownLedgerEntryType =
   | 'plan_charge_debit'
   | 'withdrawal_debit'
   | 'withdrawal_reversal'
-  | 'giftcard_purchase_debit'
-  | 'giftcard_purchase_reversal'
   | 'card_pack_order_debit'
   | 'card_pack_order_reversal'
   | 'compliance_session_debit'

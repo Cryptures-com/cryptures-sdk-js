@@ -6,6 +6,11 @@ import type {
   BalanceSimple,
   BalanceUtxo,
   BinaryResponse,
+  CardKycState,
+  CardKycSubmitResponse,
+  CardListItem,
+  CardProduct,
+  CardWebhookEvent,
   Cryptures,
   CursorPage,
   EvmBlock,
@@ -62,6 +67,29 @@ describe('type-level API', () => {
       void c.card.tags.update('tag_1', {});
       // @ts-expect-error -- portfolio requires tokenTypes.
       void c.blockchain.data.getPortfolio('ETH', '0x1', {});
+    };
+    void lazy;
+  });
+
+  it('types the card KYC surface', () => {
+    const c = null as unknown as Cryptures;
+    const lazy = () => {
+      expectTypeOf<Awaited2<ReturnType<typeof c.card.cards.submitKyc>>>().toEqualTypeOf<CardKycSubmitResponse>();
+      expectTypeOf<CardKycSubmitResponse['data']['fee_charged_usd']>().toEqualTypeOf<number>();
+      expectTypeOf<CardKycState>().toEqualTypeOf<{
+        supported: boolean;
+        fee_usd: number | null;
+        submitted: boolean;
+        submitted_at: string | null;
+      }>();
+      expectTypeOf<CardProduct['kyc_supported']>().toEqualTypeOf<boolean>();
+      expectTypeOf<CardProduct['kyc_fee_usd']>().toEqualTypeOf<number>();
+      expectTypeOf<CardListItem['kyc']>().toEqualTypeOf<CardKycState>();
+      expectTypeOf<'card.kyc_submitted'>().toExtend<CardWebhookEvent>();
+      // @ts-expect-error -- documentFront is required.
+      void c.card.cards.submitKyc('card_1', {});
+      // @ts-expect-error -- a string is not an uploadable file.
+      void c.card.cards.submitKyc('card_1', { documentFront: 'front.png' });
     };
     void lazy;
   });

@@ -4,7 +4,7 @@ Official JS/TS SDK for the [Cryptures](https://cryptures.com) API: blockchain in
 
 Cryptures is building a connectivity layer between blockchain networks, financial services, compliance providers and businesses. This package wraps its REST API behind one typed client, with:
 
-- **One method per API operation**, covering all 80 operations, grouped the way the API reference groups them (`client.blockchain.*`, `client.card.*`, `client.compliance.*`).
+- **One method per API operation**, covering all 81 operations, grouped the way the API reference groups them (`client.blockchain.*`, `client.card.*`, `client.compliance.*`).
 - **TypeScript types for every request and response**, including per-chain response shapes (for example, `getBalance('BTC', ...)` is typed as the UTXO balance shape and `getBalance('CELO', ...)` as the CELO shape).
 - **Typed errors** with the API's `code`, `message`, `requestId` and HTTP `status`.
 - **Automatic retries** with exponential backoff on network errors and 5xx responses. Calls that move money, broadcast transactions or bill per call are left out of automatic retries.
@@ -113,6 +113,25 @@ const ledger = await client.card.balance.listTransactions({ page: 1, limit: 50 }
 
 Namespaces: `cards`, `balance`, `tags`, `reports`, `webhooks`.
 
+#### Submitting KYC documents
+
+Cards whose product supports KYC (`kyc_supported` on `listProducts`, `kyc.supported` on `get` and `list`) accept identity documents. `documentFront` is required and `documentBack` is optional. Each file is a PNG, JPG or PDF of at most 2 MB. The SDK doesn't validate files; the API checks them and returns an error if they're wrong.
+
+```ts
+import { openAsBlob } from 'node:fs';
+import { readFile } from 'node:fs/promises';
+
+const { data } = await client.card.cards.submitKyc(card.card_id, {
+  documentFront: await openAsBlob('./id-front.jpg'), // a Blob or File
+  documentBack: { file: await readFile('./id-back.png'), filename: 'id-back.png', contentType: 'image/png' }, // raw bytes
+});
+// data.fee_charged_usd is 0 when the upload is free or the fee was already paid (data.fee_already_paid).
+```
+
+A one-time fee per card (`kyc_fee_usd`, set per product; 0 means the upload is free) is charged from the project balance. Submitting again for the same card isn't charged again. This call is **not retried automatically**. After a `502 upstream_error`, a `504 upstream_timeout` or a network error, check `card.cards.get` (`kyc.submitted`) and `card.balance.listTransactions` before submitting again. A `card.kyc_submitted` webhook event fires on success.
+
+Errors have a `CrypturesApiError.code` of `kyc_not_supported`, `kyc_email_unknown` or `kyc_in_progress` (409), `insufficient_balance` (402), `file_too_large` or `payload_too_large` (413), `invalid_file_type`, `missing_document_front`, `too_many_files`, `invalid_request` or `kyc_rejected` (400, with the fee refunded), `rate_limited` (429), `upstream_error` (502), `upstream_timeout` (504) or `card_not_found` (404).
+
 ### Compliance
 
 ```ts
@@ -194,6 +213,7 @@ These operations are **not retried automatically**, because after a failure you 
 - `blockchain.storage.uploadToIpfs`, which is billed per call.
 - `blockchain.wallet.generate`, where a retry would return a different new wallet.
 - `card.cards.create`, `fund` and `withdraw`, which move money, and the card state changes `setPin`, `block`, `unblock` and `terminate`.
+- `card.cards.submitKyc`, which charges a fee and has an unknown outcome after a `502` or `504`.
 - `card.tags.create`.
 - `compliance.sessions.create`.
 - `compliance.aml.check` and `compliance.walletScreening.create` **without** an `idempotencyKey`. Each of those calls is a separate charge.
